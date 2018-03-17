@@ -6,8 +6,8 @@ import time
 def find_frequent_1_itemsets():
     global head_list, min_sup, all_frequent_sets, frequent_set
     for i in range(len(data)):
-        for j in range(len(data[i])):
-            tmp = data[i][j]
+        for j in range(len(data[i][0])):
+            tmp = data[i][0][j]
             if tmp in frequent_set:
                 frequent_set[tmp] += 1
             else:
@@ -23,9 +23,19 @@ def count_frequent(pattern):
     pattern_length = len(pattern)
     count = 0
     for row in data:
-        if sum(p in pattern for p in row) == pattern_length:
+        if sum(p in pattern for p in row[0]) == pattern_length:
+            row[1] = True
             count += 1
     return count
+
+
+def remove_unvisited_row():
+    global data
+    for row in data:
+        if not row[1]:
+            data.remove(row)
+        else:
+            row[1] = False
 
 
 def apriori_gen(length):
@@ -110,11 +120,11 @@ min_sup = transaction_size * support
 data = []
 for i in range(len(data_split)):
     # Split data
-    data.append(data_split[i].split(" "))
+    data.append([data_split[i].split(" "), False])
 
 max_length = 0
 for i in data:
-    tmp_length = len(i)
+    tmp_length = len(i[0])
     if max_length < tmp_length:
         max_length = tmp_length
 
@@ -137,6 +147,7 @@ for k in range(2, max_length + 1):
     apriori_gen(k)
     if len(frequent_set) == 0:
         break
+    remove_unvisited_row()
     k += 1
     all_frequent_sets.append(frequent_set)
 
