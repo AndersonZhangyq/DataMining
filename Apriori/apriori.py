@@ -65,7 +65,7 @@ def apriori_gen(length):
     # pre:   length >= 2
     # post:  frequent_set = k-frequency-itemsets (k == length)
     global min_sup, frequent_set
-    cut_for_current_length = hash_improve(length)
+    # cut_for_current_length = hash_improve(length)
     tmp_frequent_set = {}
     if length > 2:
         pattern_list = []
@@ -149,43 +149,52 @@ data_split = data_str.split("\n")
 transaction_size = len(data_split)
 min_sup = transaction_size * support
 bucket_size = int(min_sup * .8)
-data = []
-max_length = 0
-for i in range(len(data_split)):
-    # Split data
-    tmp = data_split[i].split(" ")
-    tmp_length = len(tmp)
-    if max_length < tmp_length:
-        max_length = tmp_length
-    data.append([tmp, False])
 
-all_frequent_sets = []
-frequent_set = {}
+time_sum = 0.0
+for _ in range(10):
+    data = []
+    max_length = 0
+    for i in range(len(data_split)):
+        # Split data
+        tmp = data_split[i].split(" ")
+        tmp_length = len(tmp)
+        if max_length < tmp_length:
+            max_length = tmp_length
+        data.append([tmp, False])
 
-s_time = time.time()
-# Start mine frequent set
-# Initial Round
-find_frequent_1_itemsets()
+    all_frequent_sets = []
+    frequent_set = {}
 
-if len(frequent_set) == 0:
-    print("No frequent set found!")
-    exit()
+    s_time = time.time()
+    # Start mine frequent set
+    # Initial Round
+    find_frequent_1_itemsets()
 
-all_frequent_sets.append(frequent_set)
-
-#  Build k frequent set
-for k in range(2, max_length + 1):
-    apriori_gen(k)
     if len(frequent_set) == 0:
-        break
-    remove_unvisited_row()
-    k += 1
+        print("No frequent set found!")
+        exit()
+
     all_frequent_sets.append(frequent_set)
 
-e_time = time.time()
+    #  Build k frequent set
+    for k in range(2, max_length + 1):
+        apriori_gen(k)
+        if len(frequent_set) == 0:
+            break
+        remove_unvisited_row()
+        k += 1
+        all_frequent_sets.append(frequent_set)
 
+    e_time = time.time()
+    print("Time cost: {cost}".format(cost=(e_time - s_time)))
+    time_sum += e_time - s_time
+
+print("Time cost avg: {cost}".format(cost=(time_sum / 10)))
+
+'''
 # Feed output
 for i in all_frequent_sets:
     outputFile.write(str(i) + "\n")
 
 print("Time cost: {cost}".format(cost=(e_time - s_time)))
+'''
