@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import sys
 import time
 
@@ -37,10 +38,34 @@ def remove_unvisited_row():
             row[1] = False
 
 
+def hash_function(pattern):
+    global bucket_size
+    x = pattern[0]
+    y = pattern[-1]
+    return int((int(x) * 10 + int(y)) % bucket_size)
+
+
+def hash_improve(length):
+    global bucket_size, min_sup
+    hash_vector = [0] * bucket_size
+    list_ret = [True] * bucket_size
+    for row in data:
+        row_subsets = itertools.combinations(row[0], length)
+        for r_s in row_subsets:
+            i = hash_function(r_s)
+            if not list_ret[i]:
+                continue
+            hash_vector[i] += 1
+            if hash_vector[i] >= min_sup:
+                list_ret[i] = False
+    return list_ret
+
+
 def apriori_gen(length):
     # pre:   length >= 2
     # post:  frequent_set = k-frequency-itemsets (k == length)
     global min_sup, frequent_set
+    cut_for_current_length = hash_improve(length)
     tmp_frequent_set = {}
     if length > 2:
         pattern_list = []
@@ -55,12 +80,19 @@ def apriori_gen(length):
             #  Build new pattern
             if length == 2 and i < j:
                 pattern = [i, j]
+                #  0)  if not frequent according to hash tree, drop that
+                # if cut_for_current_length[hash_function(pattern)]:
+                #     continue
+                #  2)  Check whether new pattern's frequency is larger than min_sup
                 pattern_frequency = count_frequent(pattern)
                 if pattern_frequency >= min_sup:
                     tmp_frequent_set[' '.join([str(v) for v in pattern])] = pattern_frequency
             elif length > 2:
                 if i[length - 2] < j[length - 2] and i[1:length - 2] == j[1:length - 2]:
                     pattern = i + [j[length - 2]]
+                    #  0)  if not frequent according to hash tree, drop that
+                    # if cut_for_current_length[hash_function(pattern)]:
+                    #     continue
                     #  1)  if subset is not contained, drop that
                     should_drop = False
                     for k in pattern:
@@ -116,16 +148,16 @@ data_str = inputFile.read().strip()
 data_split = data_str.split("\n")
 transaction_size = len(data_split)
 min_sup = transaction_size * support
+bucket_size = int(min_sup * .8)
 data = []
+max_length = 0
 for i in range(len(data_split)):
     # Split data
-    data.append([data_split[i].split(" "), False])
-
-max_length = 0
-for i in data:
-    tmp_length = len(i[0])
+    tmp = data_split[i].split(" ")
+    tmp_length = len(tmp)
     if max_length < tmp_length:
         max_length = tmp_length
+    data.append([tmp, False])
 
 all_frequent_sets = []
 frequent_set = {}
