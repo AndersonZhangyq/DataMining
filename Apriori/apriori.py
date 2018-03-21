@@ -12,7 +12,6 @@ def find_frequent_1_itemsets():
                 frequent_set[tmp] += 1
             else:
                 frequent_set[tmp] = 1
-
     #  Filter elements
     frequent_set = {k: v for k, v in frequent_set.items() if v >= min_sup}
 
