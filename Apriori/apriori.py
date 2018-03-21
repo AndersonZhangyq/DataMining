@@ -4,7 +4,7 @@ import time
 
 
 def find_frequent_1_itemsets():
-    global head_list, min_sup, all_frequent_sets, frequent_set
+    global min_sup, all_frequent_sets, frequent_set
     for i in range(len(data)):
         for j in range(len(data[i][0])):
             tmp = data[i][0][j]
@@ -56,24 +56,24 @@ def apriori_gen(length):
             #  Build new pattern
             if length == 2 and i < j:
                 pattern = [i, j]
-                pattern_frequecy = count_frequent(pattern)
-                if pattern_frequecy >= min_sup:
-                    tmp_frequent_set[' '.join([str(v) for v in pattern])] = pattern_frequecy
+                pattern_frequency = count_frequent(pattern)
+                if pattern_frequency >= min_sup:
+                    tmp_frequent_set[' '.join([str(v) for v in pattern])] = pattern_frequency
             elif length > 2:
                 if i[length - 2] < j[length - 2] and i[1:length - 2] == j[1:length - 2]:
                     pattern = i + [j[length - 2]]
                     #  1)  if subset is not contained, drop that
-                    shouldDrop = False
+                    should_drop = False
                     for k in pattern:
                         string_pattern = ' '.join([str(v) for v in pattern if v != k])
                         if string_pattern not in frequent_set:
-                            shouldDrop = True
+                            should_drop = True
                             break
-                    if not shouldDrop:
+                    if not should_drop:
                         #  2)  Check whether new pattern's frequency is larger than min_sup
-                        pattern_frequecy = count_frequent(pattern)
-                        if pattern_frequecy >= min_sup:
-                            tmp_frequent_set[' '.join([str(v) for v in pattern])] = pattern_frequecy
+                        pattern_frequency = count_frequent(pattern)
+                        if pattern_frequency >= min_sup:
+                            tmp_frequent_set[' '.join([str(v) for v in pattern])] = pattern_frequency
     frequent_set = tmp_frequent_set
 
 
