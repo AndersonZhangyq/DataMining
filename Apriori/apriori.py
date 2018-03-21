@@ -1,11 +1,12 @@
 import argparse
+import collections
 import itertools
 import sys
 import time
 
 
 def find_frequent_1_itemsets():
-    global min_sup, all_frequent_sets, frequent_set
+    global min_sup, all_frequent_sets, frequent_set, data
     for i in range(len(data)):
         for j in range(len(data[i][0])):
             tmp = data[i][0][j]
@@ -15,11 +16,23 @@ def find_frequent_1_itemsets():
                 frequent_set[tmp] = 1
     #  Filter elements
     frequent_set = {k: v for k, v in frequent_set.items() if v >= min_sup}
+    frequent_set = collections.OrderedDict(sorted(frequent_set.items(), key=lambda t: t[0]))
+
+
+def delete_not_found_in_frequent_1_itemsets():
+    global data, frequent_set
+    pattern = [e[0] for e in frequent_set.items()]
+    for row in data:
+        tmp = row[0]
+        tmp = [x for x in tmp if x in pattern]
+        if len(tmp) == 0:
+            data.remove(row)
+        else:
+            row[0] = tmp
 
 
 def count_frequent(pattern):
     global data
-    pattern = [str(p) for p in pattern]
     pattern_length = len(pattern)
     count = 0
     for row in data:
@@ -156,7 +169,7 @@ for _ in range(10):
     max_length = 0
     for i in range(len(data_split)):
         # Split data
-        tmp = data_split[i].split(" ")
+        tmp = [int(t) for t in data_split[i].split(" ")]
         tmp_length = len(tmp)
         if max_length < tmp_length:
             max_length = tmp_length
@@ -173,6 +186,8 @@ for _ in range(10):
     if len(frequent_set) == 0:
         print("No frequent set found!")
         exit()
+
+    delete_not_found_in_frequent_1_itemsets()
 
     all_frequent_sets.append(frequent_set)
 
