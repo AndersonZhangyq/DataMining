@@ -16,7 +16,7 @@ def find_frequent_1_itemsets():
                 frequent_set[tmp] = 1
     #  Filter elements
     frequent_set = {k: v for k, v in frequent_set.items() if v >= min_sup}
-    frequent_set = collections.OrderedDict(sorted(frequent_set.items(), key=lambda t: t[0]))
+    frequent_set = dict(collections.OrderedDict(sorted(frequent_set.items(), key=lambda t: t[0])))
 
 
 def delete_not_found_in_frequent_1_itemsets():
@@ -33,10 +33,9 @@ def delete_not_found_in_frequent_1_itemsets():
 
 def count_frequent(pattern):
     global data
-    pattern_length = len(pattern)
     count = 0
     for row in data:
-        if sum(p in pattern for p in row[0]) == pattern_length:
+        if set(pattern).issubset(set(row[0])):
             row[1] = True
             count += 1
     return count
@@ -44,11 +43,12 @@ def count_frequent(pattern):
 
 def remove_unvisited_row():
     global data
-    for row in data:
-        if not row[1]:
-            data.remove(row)
-        else:
-            row[1] = False
+    # for row in data:
+    #     if not row[1]:
+    #         data.remove(row)
+    #     else:
+    #         row[1] = False
+    data = [[row[0], False] for row in data if row[1] == True]
 
 
 def hash_function(pattern):
@@ -206,10 +206,10 @@ for _ in range(10):
 
 print("Time cost avg: {cost}".format(cost=(time_sum / 10)))
 
-'''
-# Feed output
+# '''
+# # Feed output
 for i in all_frequent_sets:
     outputFile.write(str(i) + "\n")
 
 print("Time cost: {cost}".format(cost=(e_time - s_time)))
-'''
+# '''
