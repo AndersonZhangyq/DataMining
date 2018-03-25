@@ -15,13 +15,13 @@ def find_frequent_1_itemsets():
             else:
                 frequent_set[tmp] = 1
     #  Filter elements
-    frequent_set = {k: v for k, v in frequent_set.items() if v >= min_sup}
+    frequent_set = {frozenset([k]): v for k, v in frequent_set.items() if v >= min_sup}
     frequent_set = dict(collections.OrderedDict(sorted(frequent_set.items(), key=lambda t: t[0])))
 
 
 def delete_not_found_in_frequent_1_itemsets():
     global data, frequent_set
-    pattern = [e[0] for e in frequent_set.items()]
+    pattern = [list(e)[0] for e in frequent_set.keys()]
     for row in data:
         tmp = row[0]
         tmp = [x for x in tmp if x in pattern]
@@ -31,15 +31,18 @@ def delete_not_found_in_frequent_1_itemsets():
             row[0] = tmp
 
 
-def count_frequent(pattern):
-    global data
-    pattern_length = len(pattern)
-    count = 0
+def count_frequent(pattern_lit):
+    global data, frequent_set, min_sup
+    frequent_set_count = {}
     for row in data:
-        if set(pattern).issubset(set(row[0])):
-            row[1] = True
-            count += 1
-    return count
+        for pattern in pattern_lit:
+            if pattern.issubset(set(row[0])):
+                row[1] = True
+                if pattern in frequent_set_count:
+                    frequent_set_count[pattern] += 1
+                else:
+                    frequent_set_count[pattern] = 1
+    return {k: v for k, v in frequent_set_count.items() if v >= min_sup}
 
 
 def remove_unvisited_row():
@@ -80,46 +83,56 @@ def apriori_gen(length):
     # post:  frequent_set = k-frequency-itemsets (k == length)
     global min_sup, frequent_set
     # cut_for_current_length = hash_improve(length)
-    tmp_frequent_set = {}
-    if length > 2:
-        pattern_list = []
-        for i in list(frequent_set.keys()):
-            pattern_list.append([int(v) for v in list(i.split(' '))])
-    else:  # length == 2
-        pattern_list = [int(v) for v in frequent_set.keys()]
-    for i in pattern_list:
-        for j in pattern_list:
-            if i == j:
-                continue
+    tmp_frequent_set_list = []
+    pattern_list = list(frequent_set.keys())
+    pattern_list_length = len(pattern_list)
+    for i in range(pattern_list_length):
+        for j in range(i + 1, pattern_list_length):
             #  Build new pattern
-            if length == 2 and i < j:
-                pattern = [i, j]
+            pattern_1 = pattern_list[i]
+            pattern_2 = pattern_list[j]
+            if list(pattern_1)[:length - 2] == list(pattern_2)[:length - 2]:
+                new_pattern = pattern_1 | pattern_2
                 #  0)  if not frequent according to hash tree, drop that
-                # if cut_for_current_length[hash_function(pattern)]:
+                # if cut_for_current_length[hash_function(list(new_pattern))]:
                 #     continue
-                #  2)  Check whether new pattern's frequency is larger than min_sup
-                pattern_frequency = count_frequent(pattern)
-                if pattern_frequency >= min_sup:
-                    tmp_frequent_set[' '.join([str(v) for v in pattern])] = pattern_frequency
-            elif length > 2:
-                if i[length - 2] < j[length - 2] and i[1:length - 2] == j[1:length - 2]:
-                    pattern = i + [j[length - 2]]
-                    #  0)  if not frequent according to hash tree, drop that
-                    # if cut_for_current_length[hash_function(pattern)]:
-                    #     continue
-                    #  1)  if subset is not contained, drop that
-                    should_drop = False
-                    for k in pattern:
-                        string_pattern = ' '.join([str(v) for v in pattern if v != k])
-                        if string_pattern not in frequent_set:
+                #  1)  if subset is not contained, drop that
+                should_drop = False
+                if length > 2:
+                    new_pattern_list = list(new_pattern)
+                    for k in new_pattern_list:
+                        pattern_test = frozenset([e for e in new_pattern_list if e != k])
+                        if pattern_test not in frequent_set:
                             should_drop = True
                             break
-                    if not should_drop:
-                        #  2)  Check whether new pattern's frequency is larger than min_sup
-                        pattern_frequency = count_frequent(pattern)
-                        if pattern_frequency >= min_sup:
-                            tmp_frequent_set[' '.join([str(v) for v in pattern])] = pattern_frequency
-    frequent_set = tmp_frequent_set
+                if not should_drop:
+                    tmp_frequent_set_list.append(new_pattern)
+    #  2)  Check whether new pattern's frequency is larger than min_sup
+    frequent_set = count_frequent(tmp_frequent_set_list)
+
+
+def apriori():
+    global min_sup, all_frequent_sets, frequent_set
+    # Start mine frequent set
+    # Initial Round
+    find_frequent_1_itemsets()
+
+    if len(frequent_set) == 0:
+        print("No frequent set found!")
+        exit()
+
+    delete_not_found_in_frequent_1_itemsets()
+
+    all_frequent_sets.append(frequent_set)
+
+    #  Build k frequent set
+    for k in range(2, max_length + 1):
+        apriori_gen(k)
+        if len(frequent_set) == 0:
+            break
+        remove_unvisited_row()
+        k += 1
+        all_frequent_sets.append(frequent_set)
 
 
 # Arguments to parse
@@ -180,26 +193,8 @@ for _ in range(10):
     frequent_set = {}
 
     s_time = time.time()
-    # Start mine frequent set
-    # Initial Round
-    find_frequent_1_itemsets()
 
-    if len(frequent_set) == 0:
-        print("No frequent set found!")
-        exit()
-
-    delete_not_found_in_frequent_1_itemsets()
-
-    all_frequent_sets.append(frequent_set)
-
-    #  Build k frequent set
-    for k in range(2, max_length + 1):
-        apriori_gen(k)
-        if len(frequent_set) == 0:
-            break
-        remove_unvisited_row()
-        k += 1
-        all_frequent_sets.append(frequent_set)
+    apriori()
 
     e_time = time.time()
     print("Time cost: {cost}".format(cost=(e_time - s_time)))
@@ -210,7 +205,14 @@ print("Time cost avg: {cost}".format(cost=(time_sum / 10)))
 # '''
 # # Feed output
 for i in all_frequent_sets:
-    outputFile.write(str(i) + "\n")
+    outputFile.write("{")
+    firstRound = True
+    for k, v in i.items():
+        if not firstRound:
+            outputFile.write(",")
+        firstRound = False
+        outputFile.write("\"" + " ".join([str(e) for e in list(k)]) + "\":" + str(v))
+    outputFile.write("}\n")
 
 print("Time cost: {cost}".format(cost=(e_time - s_time)))
 # '''
