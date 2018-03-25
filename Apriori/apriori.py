@@ -33,6 +33,7 @@ def delete_not_found_in_frequent_1_itemsets():
 
 def count_frequent(pattern):
     global data
+    pattern_length = len(pattern)
     count = 0
     for row in data:
         if set(pattern).issubset(set(row[0])):
