@@ -23,17 +23,20 @@ def execute_cluster(tokens_list):
         'docid': int，文档标识符
         'cluster': int，标识该文档的聚类编号
     """
-    
+
     print(type(tokens_list), type(tokens_list[0]), list(tokens_list[0].items()))    # 仅用于验证数据格式
     #### 修改此处 ####
     import numpy as np
     from copy import deepcopy
     clusters_list = deepcopy(tokens_list)
-    for d in clusters_list:
-        d['cluster'] = np.random.randint(1, 100)
+    # for d in clusters_list:
+    #     d['cluster'] = np.random.randint(0, 65)
+    from Cluster.TextCluster import TextCluster
+    model = TextCluster(clusters_list)
+    clusters_list = model.useTFIDF()
     print(type(clusters_list[0]['cluster']))
     print(len(tokens_list), len(clusters_list))
-    
+
     return clusters_list
 
 
@@ -82,7 +85,7 @@ def evaluate_train_result():
 def generate_test_result():
     test_tokens_list = load_array(test_tokens_file)
     test_clusters_list = execute_cluster(test_tokens_list)
-    clean_clusters_list(test_clusters_list)
+    test_clusters_list = clean_clusters_list(test_clusters_list)
     dump_array(output_file, test_clusters_list)
 
 
