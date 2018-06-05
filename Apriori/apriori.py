@@ -137,16 +137,14 @@ def apriori():
 
 # Arguments to parse
 arguments = [["support", "minimum support, range from 0 to 1"],
-             ["variable_2", "variable_2 description"],
              ["inputFile", "path to input file"],
              ["outputFile", "path to output file, stdout is default. Create file if not found."]]
 
 # Create parser
 parser = argparse.ArgumentParser()
 parser.add_argument(arguments[0][0], type=float, help=arguments[0][1])
-parser.add_argument(arguments[1][0], type=float, help=arguments[1][1])
-parser.add_argument(arguments[2][0], help=arguments[2][1])
-parser.add_argument(arguments[3][0], help=arguments[3][1], nargs='?', default=sys.stdout)
+parser.add_argument(arguments[1][0], help=arguments[1][1])
+parser.add_argument(arguments[2][0], help=arguments[2][1], nargs='?', default=sys.stdout)
 
 args = parser.parse_args()
 
@@ -156,7 +154,6 @@ if support <= 0 or support >= 1:
     print("Argument Error: support should be 0 to 1!")
     parser.print_help()
     exit()
-variable_2 = args.variable_2
 try:
     inputFile = open(args.inputFile, "r")
 except:
