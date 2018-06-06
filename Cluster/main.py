@@ -31,7 +31,7 @@ def execute_cluster(tokens_list):
     clusters_list = deepcopy(tokens_list)
     # for d in clusters_list:
     #     d['cluster'] = np.random.randint(0, 65)
-    from Cluster.TextCluster import TextCluster
+    from TextCluster import TextCluster
     model = TextCluster(clusters_list)
     clusters_list = model.useTFIDF()
     print(type(clusters_list[0]['cluster']))

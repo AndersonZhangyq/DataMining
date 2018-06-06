@@ -11,7 +11,7 @@ class TextCluster:
         self.doc_index = dict(zip(self.doc_list, list(range(0, len(self.doc_list)))))
 
     def useTFIDF(self):
-        from Cluster import TF_IDF
+        import TF_IDF
         tf_idf = TF_IDF.TF_IDF(self.token_list)
         result = tf_idf.get_result()
         import numpy as np

@@ -5,6 +5,7 @@ class TF_IDF:
         self.TF = self.__calculate_tf()
         # self.print_result()
 
+    # Calculate the IDF for each term
     def __calculate_idf(self):
         num_of_doc = len(self.token_list)
         # get all unique terms
@@ -25,6 +26,7 @@ class TF_IDF:
         # get IDF matrix as {term: IDF}
         return {k: math.log(num_of_doc / v) for k, v in term_doc.items()}
 
+    # Calculate TF for each term in each document
     def __calculate_tf(self):
         # get number of terms in each document
         term_per_doc = {t['docid']: len(t['tokenids']) for t in self.token_list}
@@ -42,19 +44,15 @@ class TF_IDF:
                 TF[cur_doc_id][term] = cur_terms.count(term) / term_in_cur_doc
         return TF
 
+    # Calculate TF-IDF for each term in document
     def get_result(self):
+        # result is a list of dict of type {docid: {}}
         result = {}
         docid = [t['docid'] for t in self.token_list]
         for id in docid:
+            # tmp is a dict of type {term: TF-IDF}
             tmp = {}
             for term, tf in self.TF[id].items():
                 tmp[term] = tf * self.IDF[term]
             result[id] = tmp
         return result
-
-    # def print_result(self):
-    #     file = open('./result.out', 'w')
-    #     for docid in self.result.keys():
-    #         file.write("{} {}".format(docid, str(self.result[docid])))
-    #         file.write("\n")
-    #     file.close()
