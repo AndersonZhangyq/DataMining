@@ -29,11 +29,21 @@ def execute_cluster(tokens_list):
     import numpy as np
     from copy import deepcopy
     clusters_list = deepcopy(tokens_list)
+
+    # # Random
     # for d in clusters_list:
     #     d['cluster'] = np.random.randint(0, 65)
+
     from TextCluster import TextCluster
     model = TextCluster(clusters_list)
-    clusters_list = model.useTFIDF()
+
+    # # TF-IDF
+    # clusters_list = model.useTFIDF()
+
+    # LDA
+    clusters_list = model.useLDA()
+
+
     print(type(clusters_list[0]['cluster']))
     print(len(tokens_list), len(clusters_list))
 
