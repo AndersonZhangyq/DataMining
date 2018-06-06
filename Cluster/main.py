@@ -115,7 +115,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.train:
         sum = 0.0
-        for _ in range(1):
+        for _ in range(10):
             sum += evaluate_train_result()
         print("Mean NMI: {}".format(sum / 10))
     elif args.test:
